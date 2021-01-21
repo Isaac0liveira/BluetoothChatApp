@@ -157,7 +157,6 @@ public class ChatUtils {
 
         public ConnectThread(BluetoothDevice device){
             this.device = device;
-            device.createBond();
             BluetoothSocket tmp = null;
             try{
                 tmp = device.createRfcommSocketToServiceRecord(APP_UUID);
