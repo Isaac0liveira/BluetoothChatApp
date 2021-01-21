@@ -101,7 +101,7 @@ public class ChatUtils {
         public AcceptThread(){
             BluetoothServerSocket tmp = null;
             try{
-                tmp = bluetoothAdapter.listenUsingInsecureRfcommWithServiceRecord(APP_NAME, APP_UUID);
+                tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, APP_UUID);
             }catch (IOException e){
                 Log.e("Accept->Constructor", e.toString());
             }
@@ -160,7 +160,7 @@ public class ChatUtils {
             this.device = device;
             BluetoothSocket tmp = null;
             try{
-                tmp = device.createInsecureRfcommSocketToServiceRecord(APP_UUID);
+                tmp = device.createRfcommSocketToServiceRecord(APP_UUID);
             } catch (IOException e) {
                 Log.e("Connect->Constructor", e.toString());
             }
@@ -170,7 +170,6 @@ public class ChatUtils {
         public void run(){
 
             bluetoothAdapter.cancelDiscovery();
-
             try{
                 socket.connect();
             }catch (IOException e){
