@@ -13,14 +13,6 @@
 
     </ListView>
 
-    <TextView
-        android:id="@+id/txtState"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
-        android:text="Selecione um dispositivo" />
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -33,11 +25,11 @@
             android:layout_marginEnd="100dp"/>
 
         <Button
+            android:id="@+id/btn_send_message"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:text="@string/str_label_btn_send"
-            />
+            android:text="@string/str_label_btn_send" />
 
     </RelativeLayout>
 

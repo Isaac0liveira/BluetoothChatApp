@@ -26,6 +26,11 @@ import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,7 +41,11 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothAdapter bluetoothAdapter;
     private Context context;
     private ChatUtils chatUtils;
-    private TextView txtState;
+
+    private ListView listMainChat;
+    private EditText edCreateMessage;
+    private Button btnSendMessage;
+    private ArrayAdapter adapterMainChat;
 
     private final int LOCATION_PERMISSION_REQUEST = 101;
     private final int SELECT_DEVICE = 102;
@@ -62,16 +71,27 @@ public class MainActivity extends AppCompatActivity {
                     switch (msg.arg1){
                         case ChatUtils.STATE_NONE:
                             setState("Não Conectado!");
+                            break;
                         case ChatUtils.STATE_LISTEN:
                             setState("Não Conectado!");
+                            break;
                         case ChatUtils.STATE_CONNECTING:
                             setState("Conectando...");
+                            break;
                         case ChatUtils.STATE_CONNECTED:
                             setState("Conectado a " + connectedDevice);
+                            break;
                     }
+                    break;
                 case MESSAGE_READ:
+                    byte[] buffer = (byte[]) msg.obj;
+                    String inputBuffer = new String(buffer, 0, msg.arg1);
+                    adapterMainChat.add(connectedDevice + ": " + inputBuffer);
                     break;
                 case MESSAGE_WRITE:
+                    byte[] buffer1 = (byte[]) msg.obj;
+                    String outputBuffer = new String(buffer1);
+                    adapterMainChat.add("Eu: " + outputBuffer);
                     break;
                 case MESSAGE_DEVICE_NAME:
                     connectedDevice = msg.getData().getString(DEVICE_NAME);
@@ -95,9 +115,9 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        txtState = findViewById(R.id.txtState);
         context = this;
         initBluetooth();
+        init();
         chatUtils = new ChatUtils(context, handler);
         chatUtils.start();
     }
@@ -147,6 +167,22 @@ public class MainActivity extends AppCompatActivity {
             if(bluetoothAdapter == null){
                 Toast.makeText(this, "Bluetooth não detectado!", Toast.LENGTH_SHORT).show();
             }
+    }
+
+    private void init(){
+        listMainChat = findViewById(R.id.list_conversation);
+        edCreateMessage = findViewById(R.id.ed_enter_message);
+        btnSendMessage = findViewById(R.id.btn_send_message);
+        adapterMainChat = new ArrayAdapter(context, android.R.layout.simple_list_item_1);
+        listMainChat.setAdapter(adapterMainChat);
+
+        btnSendMessage.setOnClickListener(v -> {
+            String message =  edCreateMessage.getText().toString();
+            if(!message.isEmpty()){
+                edCreateMessage.setText("");
+                chatUtils.write(message.getBytes());
+            }
+        });
     }
 
     @SuppressLint("NonConstantResourceId")
