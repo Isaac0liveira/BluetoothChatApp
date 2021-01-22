@@ -15,6 +15,7 @@ import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -98,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
         context = this;
         initBluetooth();
         chatUtils = new ChatUtils(context, handler);
+        chatUtils.start();
     }
 
     @Override

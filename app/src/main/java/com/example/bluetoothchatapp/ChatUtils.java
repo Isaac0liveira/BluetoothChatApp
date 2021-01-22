@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ParcelUuid;
+import android.provider.Settings;
 import android.util.Log;
 
 import java.io.IOException;
@@ -23,8 +24,8 @@ public class ChatUtils {
     private AcceptThread acceptThread;
     private BluetoothAdapter bluetoothAdapter;
 
-    private final String APP_NAME = "BluetoothChatApp";
-    public UUID APP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final String APP_NAME = "BluetoothChatApp";
+    private static final UUID APP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     public static final int STATE_NONE = 0;
     public static final int STATE_LISTEN = 1;
@@ -33,7 +34,7 @@ public class ChatUtils {
 
     private int state;
 
-    public ChatUtils(Context context, Handler handler){
+    public ChatUtils(Context context, Handler handler) {
         this.context = context;
         this.handler = handler;
 
@@ -51,13 +52,13 @@ public class ChatUtils {
         handler.obtainMessage(MainActivity.MESSAGE_STATE_CHANGED, state, -1).sendToTarget();
     }
 
-    private synchronized void start(){
-        if(connectThread != null){
+    public synchronized void start() {
+        if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
         }
 
-        if(acceptThread == null){
+        if (acceptThread == null) {
             acceptThread = new AcceptThread();
             acceptThread.start();
         }
@@ -65,13 +66,13 @@ public class ChatUtils {
         setState(STATE_LISTEN);
     }
 
-    public synchronized void stop(){
-        if(connectThread != null){
+    public synchronized void stop() {
+        if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
         }
 
-        if(acceptThread != null){
+        if (acceptThread != null) {
             acceptThread.cancel();
             acceptThread = null;
         }
@@ -79,13 +80,13 @@ public class ChatUtils {
         setState(STATE_NONE);
     }
 
-    public void connect(BluetoothDevice device){
-        if(state == STATE_CONNECTING){
+    public void connect(BluetoothDevice device) {
+        if (state == STATE_CONNECTING) {
             connectThread.cancel();
             connectThread = null;
         }
 
-        if(bluetoothAdapter.isDiscovering()){
+        if (bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
 
@@ -95,44 +96,54 @@ public class ChatUtils {
         setState(STATE_CONNECTING);
     }
 
-    private class AcceptThread extends Thread{
+    private class AcceptThread extends Thread {
         private final BluetoothServerSocket serverSocket;
 
-        public AcceptThread(){
+        public AcceptThread() {
             BluetoothServerSocket tmp = null;
-            try{
+            try {
                 tmp = bluetoothAdapter.listenUsingRfcommWithServiceRecord(APP_NAME, APP_UUID);
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.e("Accept->Constructor", e.toString());
             }
 
             serverSocket = tmp;
         }
 
-        public void run(){
+        public void run() {
             BluetoothSocket socket = null;
-            try{
-                serverSocket.accept();
-            }catch (IOException e){
-                Log.e("Accept->Run", e.toString());
-                try{
-                    serverSocket.close();
-                }catch (IOException e1){
-                    Log.e("Accept->Close", e1.toString());
+            while (true) {
+                try {
+                    socket = serverSocket.accept();
+                } catch (IOException e) {
+                    Log.e("Accept->Run", e.toString());
+                    try {
+                        serverSocket.close();
+                    } catch (IOException e1) {
+                        Log.e("Accept->Close", e1.toString());
+                    }
+
                 }
+                if (socket != null) {
+                    connected(socket.getRemoteDevice());
+                    break;
+                }else{
+                    run();
+                }
+
             }
 
-            if(serverSocket != null){
-                switch (state){
+            if (serverSocket != null) {
+                switch (state) {
                     case STATE_LISTEN:
                     case STATE_CONNECTING:
                         connected(socket.getRemoteDevice());
                         break;
                     case STATE_NONE:
                     case STATE_CONNECTED:
-                        try{
+                        try {
                             socket.close();
-                        }catch (IOException e){
+                        } catch (IOException e) {
                             Log.e("Accept->CloseSocket", e.toString());
                         }
                         break;
@@ -140,26 +151,26 @@ public class ChatUtils {
             }
         }
 
-        public void cancel(){
-            try{
+        public void cancel() {
+            try {
                 serverSocket.close();
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.e("Accept->CloseServer", e.toString());
             }
         }
     }
 
 
-
-    private class ConnectThread extends Thread{
+    private class ConnectThread extends Thread {
         private final BluetoothSocket socket;
         private final BluetoothDevice device;
 
 
-        public ConnectThread(BluetoothDevice device){
+        public ConnectThread(BluetoothDevice device) {
             this.device = device;
             BluetoothSocket tmp = null;
-            try{
+
+            try {
                 tmp = device.createRfcommSocketToServiceRecord(APP_UUID);
             } catch (IOException e) {
                 Log.e("Connect->Constructor", e.toString());
@@ -167,40 +178,42 @@ public class ChatUtils {
             socket = tmp;
         }
 
-        public void run(){
+        public void run() {
 
             bluetoothAdapter.cancelDiscovery();
-            try{
+
+            try {
                 socket.connect();
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.e("Connect->Run", e.toString());
-                try{
+                try {
                     socket.close();
-                }catch (IOException e1){
+                } catch (IOException e1) {
                     Log.e("Connect->CloseSocket", e1.toString());
                 }
+                connectThread = new ConnectThread(device);
                 connectionFailed();
                 return;
             }
 
-            synchronized (ChatUtils.this){
+            synchronized (ChatUtils.this) {
                 connectThread = null;
             }
 
             connected(device);
         }
 
-        public void cancel(){
-            try{
+        public void cancel() {
+            try {
                 socket.close();
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.e("Connect->Cancel", e.toString());
             }
         }
 
     }
 
-    private synchronized void connectionFailed(){
+    private synchronized void connectionFailed() {
         Message message = handler.obtainMessage(MainActivity.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(MainActivity.TOAST, "Não conseguiu conectar ao dispositivo!");
@@ -210,8 +223,8 @@ public class ChatUtils {
         ChatUtils.this.start();
     }
 
-    private synchronized void connected(BluetoothDevice device){
-        if(connectThread != null){
+    private synchronized void connected(BluetoothDevice device) {
+        if (connectThread != null) {
             connectThread.cancel();
             connectThread = null;
         }
