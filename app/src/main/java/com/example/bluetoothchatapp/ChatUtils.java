@@ -111,7 +111,7 @@ public class ChatUtils {
         setState(STATE_CONNECTING);
     }
 
-    public void write(byte[] buffer){
+    public void write(byte[] buffer, int code){
         ConnectedThread conThread;
         synchronized (this){
             if(state != STATE_CONNECTED){
@@ -121,7 +121,7 @@ public class ChatUtils {
             conThread = connectedThread;
         }
 
-        conThread.write(buffer);
+        conThread.write(buffer, code);
     }
 
     private class AcceptThread extends Thread {
@@ -267,10 +267,10 @@ public class ChatUtils {
             }
         }
 
-        public void write(byte[] buffer) {
+        public void write(byte[] buffer, int code) {
             try{
                 outputStream.write(buffer);
-                handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
+                handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, code, buffer).sendToTarget();
             }catch(IOException e){
 
             }

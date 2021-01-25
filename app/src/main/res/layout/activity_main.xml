@@ -9,26 +9,25 @@
     <ListView
         android:id="@+id/list_conversation"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-
-    </ListView>
+        android:layout_height="wrap_content"/>
 
     <RelativeLayout
+        android:id="@+id/relative"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
         <EditText
             android:id="@+id/ed_enter_message"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="100dp"/>
+            android:layout_width="250dp"
+            android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btn_send_message"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
+            android:layout_marginEnd="105dp"
             android:text="@string/str_label_btn_send" />
 
     </RelativeLayout>
