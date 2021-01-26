@@ -117,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
                             adapterMainChat.add(connectedDevice + ": " + inputBuffer);
                         }
                         break;
-
                 case MESSAGE_WRITE:
                     byte[] buffer1 = (byte[]) msg.obj;
                     String outputBuffer = new String(buffer1);
@@ -148,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         context = this;
         fileName = getExternalCacheDir().getAbsolutePath();
-        fileName += "/audiorecordtest.3gp";
+        fileName += "/audiorecordtest.mp3";
         initBluetooth();
         init();
         chatUtils = new ChatUtils(context, handler);
@@ -203,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[1024];
+        byte[] bytearray = new byte[4096];
 
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
@@ -219,9 +218,8 @@ public class MainActivity extends AppCompatActivity {
 
             File outputFile = File.createTempFile("file", "mp3", getCacheDir());
             outputFile.deleteOnExit();
-            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.3gp");
+            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.mp3");
             fileoutputstream.write(bytearray);
-            fileoutputstream.flush();
             fileoutputstream.close();
 
         } catch (IOException ex) {
@@ -249,6 +247,7 @@ public class MainActivity extends AppCompatActivity {
     private void stopRecording() throws IOException {
         recorder.stop();
         recorder.release();
+        convertBytesToFile(convert(fileName));
         chatUtils.write(convert(fileName), 2);
         recorder = null;
     }

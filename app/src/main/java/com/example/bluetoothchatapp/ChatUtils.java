@@ -253,12 +253,14 @@ public class ChatUtils {
 
         @Override
         public void run() {
-            byte[] buffer = new byte[1024];
+            byte[] buffer;
             int bytes;
             while (true) {
                 try {
-                    bytes = inputStream.read(buffer);
-                    handler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    if(inputStream.available() != 0) {
+                        bytes = inputStream.read(buffer = new byte[inputStream.available()]);
+                        handler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    }
                 } catch (IOException e) {
                     Log.d("Erro: ", "Input stream was disconnected", e);
                     connectionLost();
