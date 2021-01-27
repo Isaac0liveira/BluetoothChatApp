@@ -2,10 +2,10 @@ plugins {
     id 'com.android.application'
 }
 
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
-
     defaultConfig {
         applicationId "com.example.bluetoothchatapp"
         minSdkVersion 19
@@ -29,7 +29,9 @@ android {
 }
 
 dependencies {
-
+    implementation 'com.github.axet:android-library:1.33.0'
+    implementation 'com.github.axet:android-audio-library:1.0.180'
+    implementation 'com.github.axet:vorbis:1.0.5'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'

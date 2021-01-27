@@ -1,0 +1,145 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+ * Project
+   libogg-vorbis:/Users/rav/Downloads/libogg-vorbis-android-master/main/.classpa
+   th:
+   Could not resolve source path unit in project libogg-vorbis: ignored. The
+   project may not compile if the given source path provided source code.
+
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* .DS_Store
+* ant.properties
+* build.xml
+* proguard-project.txt
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => liboggvorbis/src/main/AndroidManifest.xml
+* jni/ => liboggvorbis/src/main/jni/
+* jni/Android.mk => liboggvorbis/src/main/resources/Android.mk
+* jni/include/ogg/config_types.h => liboggvorbis/src/main/resources/include/ogg/config_types.h
+* jni/include/ogg/ogg.h => liboggvorbis/src/main/resources/include/ogg/ogg.h
+* jni/include/ogg/os_types.h => liboggvorbis/src/main/resources/include/ogg/os_types.h
+* jni/include/stream/util.h => liboggvorbis/src/main/resources/include/stream/util.h
+* jni/include/vorbis/codec.h => liboggvorbis/src/main/resources/include/vorbis/codec.h
+* jni/include/vorbis/vorbisenc.h => liboggvorbis/src/main/resources/include/vorbis/vorbisenc.h
+* jni/include/vorbis/vorbisfile.h => liboggvorbis/src/main/resources/include/vorbis/vorbisfile.h
+* jni/libogg/Android.mk => liboggvorbis/src/main/resources/libogg/Android.mk
+* jni/libogg/bitwise.c => liboggvorbis/src/main/resources/libogg/bitwise.c
+* jni/libogg/framing.c => liboggvorbis/src/main/resources/libogg/framing.c
+* jni/libvorbis-stream/Android.mk => liboggvorbis/src/main/resources/libvorbis-stream/Android.mk
+* jni/libvorbis-stream/jni-util.c => liboggvorbis/src/main/resources/libvorbis-stream/jni-util.c
+* jni/libvorbis-stream/vorbis-fileinputstream.c => liboggvorbis/src/main/resources/libvorbis-stream/vorbis-fileinputstream.c
+* jni/libvorbis-stream/vorbis-fileoutputstream.c => liboggvorbis/src/main/resources/libvorbis-stream/vorbis-fileoutputstream.c
+* jni/libvorbis/Android.mk => liboggvorbis/src/main/resources/libvorbis/Android.mk
+* jni/libvorbis/analysis.c => liboggvorbis/src/main/resources/libvorbis/analysis.c
+* jni/libvorbis/backends.h => liboggvorbis/src/main/resources/libvorbis/backends.h
+* jni/libvorbis/barkmel.c => liboggvorbis/src/main/resources/libvorbis/barkmel.c
+* jni/libvorbis/bitrate.c => liboggvorbis/src/main/resources/libvorbis/bitrate.c
+* jni/libvorbis/bitrate.h => liboggvorbis/src/main/resources/libvorbis/bitrate.h
+* jni/libvorbis/block.c => liboggvorbis/src/main/resources/libvorbis/block.c
+* jni/libvorbis/books/Makefile => liboggvorbis/src/main/resources/libvorbis/books/Makefile
+* jni/libvorbis/books/Makefile.am => liboggvorbis/src/main/resources/libvorbis/books/Makefile.am
+* jni/libvorbis/books/Makefile.in => liboggvorbis/src/main/resources/libvorbis/books/Makefile.in
+* jni/libvorbis/books/coupled/Makefile => liboggvorbis/src/main/resources/libvorbis/books/coupled/Makefile
+* jni/libvorbis/books/coupled/Makefile.am => liboggvorbis/src/main/resources/libvorbis/books/coupled/Makefile.am
+* jni/libvorbis/books/coupled/Makefile.in => liboggvorbis/src/main/resources/libvorbis/books/coupled/Makefile.in
+* jni/libvorbis/books/coupled/res_books_51.h => liboggvorbis/src/main/resources/libvorbis/books/coupled/res_books_51.h
+* jni/libvorbis/books/coupled/res_books_stereo.h => liboggvorbis/src/main/resources/libvorbis/books/coupled/res_books_stereo.h
+* jni/libvorbis/books/floor/Makefile => liboggvorbis/src/main/resources/libvorbis/books/floor/Makefile
+* jni/libvorbis/books/floor/Makefile.am => liboggvorbis/src/main/resources/libvorbis/books/floor/Makefile.am
+* jni/libvorbis/books/floor/Makefile.in => liboggvorbis/src/main/resources/libvorbis/books/floor/Makefile.in
+* jni/libvorbis/books/floor/floor_books.h => liboggvorbis/src/main/resources/libvorbis/books/floor/floor_books.h
+* jni/libvorbis/books/uncoupled/Makefile => liboggvorbis/src/main/resources/libvorbis/books/uncoupled/Makefile
+* jni/libvorbis/books/uncoupled/Makefile.am => liboggvorbis/src/main/resources/libvorbis/books/uncoupled/Makefile.am
+* jni/libvorbis/books/uncoupled/Makefile.in => liboggvorbis/src/main/resources/libvorbis/books/uncoupled/Makefile.in
+* jni/libvorbis/books/uncoupled/res_books_uncoupled.h => liboggvorbis/src/main/resources/libvorbis/books/uncoupled/res_books_uncoupled.h
+* jni/libvorbis/codebook.c => liboggvorbis/src/main/resources/libvorbis/codebook.c
+* jni/libvorbis/codebook.h => liboggvorbis/src/main/resources/libvorbis/codebook.h
+* jni/libvorbis/codec_internal.h => liboggvorbis/src/main/resources/libvorbis/codec_internal.h
+* jni/libvorbis/envelope.c => liboggvorbis/src/main/resources/libvorbis/envelope.c
+* jni/libvorbis/envelope.h => liboggvorbis/src/main/resources/libvorbis/envelope.h
+* jni/libvorbis/floor0.c => liboggvorbis/src/main/resources/libvorbis/floor0.c
+* jni/libvorbis/floor1.c => liboggvorbis/src/main/resources/libvorbis/floor1.c
+* jni/libvorbis/highlevel.h => liboggvorbis/src/main/resources/libvorbis/highlevel.h
+* jni/libvorbis/info.c => liboggvorbis/src/main/resources/libvorbis/info.c
+* jni/libvorbis/lookup.c => liboggvorbis/src/main/resources/libvorbis/lookup.c
+* jni/libvorbis/lookup.h => liboggvorbis/src/main/resources/libvorbis/lookup.h
+* jni/libvorbis/lookup_data.h => liboggvorbis/src/main/resources/libvorbis/lookup_data.h
+* jni/libvorbis/lpc.c => liboggvorbis/src/main/resources/libvorbis/lpc.c
+* jni/libvorbis/lpc.h => liboggvorbis/src/main/resources/libvorbis/lpc.h
+* jni/libvorbis/lsp.c => liboggvorbis/src/main/resources/libvorbis/lsp.c
+* jni/libvorbis/lsp.h => liboggvorbis/src/main/resources/libvorbis/lsp.h
+* jni/libvorbis/mapping0.c => liboggvorbis/src/main/resources/libvorbis/mapping0.c
+* jni/libvorbis/masking.h => liboggvorbis/src/main/resources/libvorbis/masking.h
+* jni/libvorbis/mdct.c => liboggvorbis/src/main/resources/libvorbis/mdct.c
+* jni/libvorbis/mdct.h => liboggvorbis/src/main/resources/libvorbis/mdct.h
+* jni/libvorbis/misc.h => liboggvorbis/src/main/resources/libvorbis/misc.h
+* jni/libvorbis/modes/Makefile => liboggvorbis/src/main/resources/libvorbis/modes/Makefile
+* jni/libvorbis/modes/Makefile.am => liboggvorbis/src/main/resources/libvorbis/modes/Makefile.am
+* jni/libvorbis/modes/Makefile.in => liboggvorbis/src/main/resources/libvorbis/modes/Makefile.in
+* jni/libvorbis/modes/floor_all.h => liboggvorbis/src/main/resources/libvorbis/modes/floor_all.h
+* jni/libvorbis/modes/psych_11.h => liboggvorbis/src/main/resources/libvorbis/modes/psych_11.h
+* jni/libvorbis/modes/psych_16.h => liboggvorbis/src/main/resources/libvorbis/modes/psych_16.h
+* jni/libvorbis/modes/psych_44.h => liboggvorbis/src/main/resources/libvorbis/modes/psych_44.h
+* jni/libvorbis/modes/psych_8.h => liboggvorbis/src/main/resources/libvorbis/modes/psych_8.h
+* jni/libvorbis/modes/residue_16.h => liboggvorbis/src/main/resources/libvorbis/modes/residue_16.h
+* jni/libvorbis/modes/residue_44.h => liboggvorbis/src/main/resources/libvorbis/modes/residue_44.h
+* jni/libvorbis/modes/residue_44p51.h => liboggvorbis/src/main/resources/libvorbis/modes/residue_44p51.h
+* jni/libvorbis/modes/residue_44u.h => liboggvorbis/src/main/resources/libvorbis/modes/residue_44u.h
+* jni/libvorbis/modes/residue_8.h => liboggvorbis/src/main/resources/libvorbis/modes/residue_8.h
+* jni/libvorbis/modes/setup_11.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_11.h
+* jni/libvorbis/modes/setup_16.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_16.h
+* jni/libvorbis/modes/setup_22.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_22.h
+* jni/libvorbis/modes/setup_32.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_32.h
+* jni/libvorbis/modes/setup_44.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_44.h
+* jni/libvorbis/modes/setup_44p51.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_44p51.h
+* jni/libvorbis/modes/setup_44u.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_44u.h
+* jni/libvorbis/modes/setup_8.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_8.h
+* jni/libvorbis/modes/setup_X.h => liboggvorbis/src/main/resources/libvorbis/modes/setup_X.h
+* jni/libvorbis/os.h => liboggvorbis/src/main/resources/libvorbis/os.h
+* jni/libvorbis/psy.c => liboggvorbis/src/main/resources/libvorbis/psy.c
+* jni/libvorbis/psy.h => liboggvorbis/src/main/resources/libvorbis/psy.h
+* jni/libvorbis/psytune.c => liboggvorbis/src/main/resources/libvorbis/psytune.c
+* jni/libvorbis/registry.c => liboggvorbis/src/main/resources/libvorbis/registry.c
+* jni/libvorbis/registry.h => liboggvorbis/src/main/resources/libvorbis/registry.h
+* jni/libvorbis/res0.c => liboggvorbis/src/main/resources/libvorbis/res0.c
+* jni/libvorbis/scales.h => liboggvorbis/src/main/resources/libvorbis/scales.h
+* jni/libvorbis/sharedbook.c => liboggvorbis/src/main/resources/libvorbis/sharedbook.c
+* jni/libvorbis/smallft.c => liboggvorbis/src/main/resources/libvorbis/smallft.c
+* jni/libvorbis/smallft.h => liboggvorbis/src/main/resources/libvorbis/smallft.h
+* jni/libvorbis/synthesis.c => liboggvorbis/src/main/resources/libvorbis/synthesis.c
+* jni/libvorbis/tone.c => liboggvorbis/src/main/resources/libvorbis/tone.c
+* jni/libvorbis/vorbisenc.c => liboggvorbis/src/main/resources/libvorbis/vorbisenc.c
+* jni/libvorbis/vorbisfile.c => liboggvorbis/src/main/resources/libvorbis/vorbisfile.c
+* jni/libvorbis/window.c => liboggvorbis/src/main/resources/libvorbis/window.c
+* jni/libvorbis/window.h => liboggvorbis/src/main/resources/libvorbis/window.h
+* libs/armeabi/libogg.so => liboggvorbis/src/main/jniLibs/armeabi/libogg.so
+* libs/armeabi/libvorbis-stream.so => liboggvorbis/src/main/jniLibs/armeabi/libvorbis-stream.so
+* libs/armeabi/libvorbis.so => liboggvorbis/src/main/jniLibs/armeabi/libvorbis.so
+* src/ => liboggvorbis/src/main/java/
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)

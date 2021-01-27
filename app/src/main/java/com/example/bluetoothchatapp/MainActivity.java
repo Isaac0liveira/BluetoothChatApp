@@ -41,6 +41,11 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.axet.androidlibrary.app.Natives;
+import com.github.axet.audiolibrary.encoders.FormatOGG;
+
+import org.apache.commons.codec.Encoder;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -48,6 +53,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Native;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -85,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int MESSAGE_WRITE = 2;
     public static final int MESSAGE_DEVICE_NAME = 3;
     public static final int MESSAGE_TOAST = 4;
-
 
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -146,8 +152,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+        FormatOGG.natives(context);
+        FormatOGG.supported(context);
         fileName = getExternalCacheDir().getAbsolutePath();
-        fileName += "/audiorecordtest.mp3";
+        fileName += "/audiorecordtest.ogg";
         initBluetooth();
         init();
         chatUtils = new ChatUtils(context, handler);
@@ -202,7 +210,7 @@ public class MainActivity extends AppCompatActivity {
 
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[4096];
+        byte[] bytearray = new byte[1024];
 
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
@@ -215,10 +223,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void convertBytesToFile(byte[] bytearray) {
         try {
-
-            File outputFile = File.createTempFile("file", "mp3", getCacheDir());
+            File outputFile = File.createTempFile("file", "ogg", getCacheDir());
             outputFile.deleteOnExit();
-            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.mp3");
+            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
             fileoutputstream.write(bytearray);
             fileoutputstream.close();
 
@@ -226,14 +233,13 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
     }
-
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startRecording() {
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.OGG);
         recorder.setOutputFile(fileName);
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.VORBIS);
 
         try {
             recorder.prepare();
