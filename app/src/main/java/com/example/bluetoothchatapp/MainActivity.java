@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                     byte[] buffer = (byte[]) msg.obj;
                     String inputBuffer = new String(buffer, 0, msg.arg1);
                     if (inputBuffer.length() > 100) {
-                        convertBytesToFile(buffer);
+                        convertBytesToFile(buffer, "ogg");
                     } else {
                         adapterMainChat.add(connectedDevice + ": " + inputBuffer);
                     }
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[1024];
+        byte[] bytearray = new byte[2048];
 
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
@@ -252,9 +252,9 @@ public class MainActivity extends AppCompatActivity {
         return bytes;
     }
 
-    private void convertBytesToFile(byte[] bytearray) {
+    private void convertBytesToFile(byte[] bytearray, String suffix) {
         try {
-            File outputFile = File.createTempFile("file", "ogg", getCacheDir());
+            File outputFile = File.createTempFile("file", suffix, getCacheDir());
             outputFile.deleteOnExit();
             FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
             fileoutputstream.write(bytearray);
@@ -280,13 +280,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void stopRecording() {
-        if(!vorbisRecorder.isRecording()){
-            startRecording();
-            return;
-        }
+    private void stopRecording() throws IOException {
         vorbisRecorder.stop();
         recordButton.setText("Start");
+        chatUtils.write(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), -1);
     }
 
 
@@ -314,7 +311,11 @@ public class MainActivity extends AppCompatActivity {
                         recording = true;
                         return;
                     }else{
-                        stopRecording();
+                        try {
+                            stopRecording();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         recording = false;
                         return;
                     }
