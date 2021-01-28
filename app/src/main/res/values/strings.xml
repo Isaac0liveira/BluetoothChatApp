@@ -2,6 +2,7 @@
     <string name="app_name">BluetoothChatApp</string>
     <string name="str_label_btn_send">Enviar</string>
     <string name="str_label_btn_record">Gravar</string>
+    <string name="str_label_btn_play">Audio</string>
     <string name="str_menu_search_devices">Procurar Dispositivos</string>
     <string name="str_menu_bluetooth_on">Ligar</string>
 

@@ -1,4 +1,4 @@
+include ':libvorbis-libogg-android-master'
 include ':app'
 rootProject.name = "BluetoothChatApp"
-include ':liboggvorbis'
-include ':liboggvorbis'
+

@@ -5,8 +5,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.ActionBarContainer;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -14,15 +12,11 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
-import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,32 +25,22 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.github.axet.androidlibrary.app.Natives;
-import com.github.axet.audiolibrary.encoders.FormatOGG;
+import org.xiph.vorbis.player.VorbisPlayer;
+import org.xiph.vorbis.recorder.VorbisRecorder;
 
-import org.apache.commons.codec.Encoder;
-
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Native;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -71,9 +55,11 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter adapterMainChat;
 
     private Button recordButton = null;
-    private MediaRecorder recorder = null;
+    private Button playButton = null;
+    private VorbisRecorder vorbisRecorder;
+    private VorbisPlayer vorbisPlayer;
 
-    private RecordButton btnRecord = null;
+
     private MediaPlayer player = null;
     private static String fileName = null;
 
@@ -116,13 +102,13 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case MESSAGE_READ:
                     byte[] buffer = (byte[]) msg.obj;
-                        String inputBuffer = new String(buffer, 0, msg.arg1);
-                        if (inputBuffer.length() > 100){
-                            convertBytesToFile(buffer);
-                        }else {
-                            adapterMainChat.add(connectedDevice + ": " + inputBuffer);
-                        }
-                        break;
+                    String inputBuffer = new String(buffer, 0, msg.arg1);
+                    if (inputBuffer.length() > 100) {
+                        convertBytesToFile(buffer);
+                    } else {
+                        adapterMainChat.add(connectedDevice + ": " + inputBuffer);
+                    }
+                    break;
                 case MESSAGE_WRITE:
                     byte[] buffer1 = (byte[]) msg.obj;
                     String outputBuffer = new String(buffer1);
@@ -141,6 +127,51 @@ public class MainActivity extends AppCompatActivity {
         }
     });
 
+    private Handler recordingHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case VorbisRecorder.START_ENCODING:
+                    Log.d("Gravação: ", "Gravação Iniciada");
+                    break;
+                case VorbisRecorder.STOP_ENCODING:
+                    Log.d("Gravação: ", "Parando a Gravação");
+                    break;
+                case VorbisRecorder.UNSUPPORTED_AUDIO_TRACK_RECORD_PARAMETERS:
+                    Log.d("Gravação: ", "Seu dispositivo não suporta os parâmetros de gravação");
+                    break;
+                case VorbisRecorder.ERROR_INITIALIZING:
+                    Log.d("Gravação: ", "Erro ao iniciar, tente alterar as configurações.");
+                    break;
+                case VorbisRecorder.FAILED_FOR_UNKNOWN_REASON:
+                    Log.d("Gravação: ", "Gravação falhou por um motivo desconhecido!");
+                    break;
+                case VorbisRecorder.FINISHED_SUCCESSFULLY:
+                    Log.d("Gravação: ", "Gravação salva com sucesso");
+                    break;
+            }
+            return false;
+        }
+    });
+
+    private Handler playerHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            switch (msg.what) {
+                case VorbisPlayer.PLAYING_FAILED:
+                    Log.d("Player: ", "Falha em reproduzir o audio!");
+                    break;
+                case VorbisPlayer.PLAYING_FINISHED:
+                    Log.d("Player: ", "Audio reproduzido com sucesso!");
+                    break;
+                case VorbisPlayer.PLAYING_STARTED:
+                    Log.d("Player: ", "Começando a reproduzir o audio!");
+                    break;
+            }
+            return false;
+        }
+    });
+
     private void setState(CharSequence subtitle) {
         getSupportActionBar().setSubtitle(subtitle);
     }
@@ -152,8 +183,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
-        FormatOGG.natives(context);
-        FormatOGG.supported(context);
         fileName = getExternalCacheDir().getAbsolutePath();
         fileName += "/audiorecordtest.ogg";
         initBluetooth();
@@ -233,63 +262,14 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
     }
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void startRecording() {
-        recorder = new MediaRecorder();
-        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setOutputFormat(MediaRecorder.OutputFormat.OGG);
-        recorder.setOutputFile(fileName);
-        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.VORBIS);
-
-        try {
-            recorder.prepare();
-        } catch (IOException e) {
-            Log.e("Audio->Record", "Método prepare() falhou!");
-        }
-
-        recorder.start();
+        vorbisRecorder.start(8000, 1, 16000);
     }
 
-    private void stopRecording() throws IOException {
-        recorder.stop();
-        recorder.release();
-        convertBytesToFile(convert(fileName));
-        chatUtils.write(convert(fileName), 2);
-        recorder = null;
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void onRecord(boolean start) throws IOException {
-        if (start) {
-            startRecording();
-        } else {
-            stopRecording();
-        }
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    class RecordButton extends androidx.appcompat.widget.AppCompatButton {
-        boolean mStartRecording = true;
-
-        OnClickListener clicker = v -> {
-            try {
-                onRecord(mStartRecording);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (mStartRecording) {
-                setText("Stop recording");
-            } else {
-                setText("Start recording");
-            }
-            mStartRecording = !mStartRecording;
-        };
-
-        public RecordButton(Context ctx) {
-            super(ctx);
-            setText("Start recording");
-            setOnClickListener(clicker);
-        }
+    private void stopRecording() {
+        vorbisRecorder.stop();
     }
 
 
@@ -302,12 +282,44 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void init() {
+        File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
+        vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
+
         listMainChat = findViewById(R.id.list_conversation);
         edCreateMessage = findViewById(R.id.ed_enter_message);
         btnSendMessage = findViewById(R.id.btn_send_message);
+        playButton = findViewById(R.id.btn_play);
         adapterMainChat = new ArrayAdapter(context, android.R.layout.simple_list_item_1);
         listMainChat.setAdapter(adapterMainChat);
-        recordButton = new RecordButton(context);
+        recordButton = new Button(context);
+        recordButton.setText("Start");
+        recordButton.setOnClickListener(v -> {
+                if (vorbisRecorder.isRecording()) {
+                    stopRecording();
+                    recordButton.setText("Start");
+                } else {
+                    startRecording();
+                    recordButton.setText("Stop");
+                }
+        });
+        playButton.setOnClickListener(v -> {
+            if (vorbisPlayer == null) {
+                try {
+                    vorbisPlayer = new VorbisPlayer(fileToSaveTo, playerHandler);
+                    vorbisPlayer.start();
+                    vorbisPlayer.stop();
+                } catch (FileNotFoundException e) {
+                    Log.e("erroPlayer", "Failed to find saveTo.ogg", e);
+                    Toast.makeText(context, "Failed to find file to play!", Toast.LENGTH_SHORT).show();
+                }
+            } else if (vorbisPlayer.isPlaying()) {
+                vorbisPlayer.stop();
+                playButton.setText("Audio");
+            } else {
+                vorbisPlayer.start();
+                playButton.setText("Parar");
+            }
+        });
         RelativeLayout rl = findViewById(R.id.relative);
         rl.addView(recordButton, new RelativeLayout.LayoutParams(150, 150));
         btnSendMessage.setOnClickListener(v -> {

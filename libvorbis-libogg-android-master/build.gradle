@@ -1,0 +1,52 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.2'
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion project.hasProperty("defaultCompileSdkVersion") ? defaultCompileSdkVersion : 28
+    buildToolsVersion project.hasProperty("defaultBuildToolsVersion") ? defaultBuildToolsVersion : "28.0.3"
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion project.hasProperty("defaultTargetSdkVersion") ? defaultTargetSdkVersion : 28
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard_libvorbis-libogg.cfg'
+        }
+    }
+
+    lintOptions { abortOnError false }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src', 'src-gen']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+}
+
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+
+}
+

@@ -17,6 +17,13 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true">
 
+        <Button
+            android:id="@+id/btn_play"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:text="@string/str_label_btn_play" />
+
         <EditText
             android:id="@+id/ed_enter_message"
             android:layout_width="250dp"

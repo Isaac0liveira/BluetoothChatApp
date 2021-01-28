@@ -13,7 +13,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
-            <option value="$PROJECT_DIR$/liboggvorbis" />
+            <option value="$PROJECT_DIR$/libvorbis-libogg-android-master" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

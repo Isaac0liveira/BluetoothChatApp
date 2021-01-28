@@ -7,6 +7,16 @@ android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
     defaultConfig {
+        multiDexEnabled true
+    }
+
+    defaultConfig {
+        ndk {
+            abiFilters "armeabi-v7a", "x86"
+        }
+        sourceSets.main {
+            jniLibs.srcDirs = ['prebuilt_libs']
+        }
         applicationId "com.example.bluetoothchatapp"
         minSdkVersion 19
         targetSdkVersion 30
@@ -22,19 +32,25 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets { main { jni.srcDirs = ['src/main/jni/','src/main/jniLibs/'] } }
+    externalNativeBuild {
+        ndkBuild {
+            path '../libvorbis-libogg-android-master/jni/Android.mk'
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    ndkVersion '21.1.6352462'
 }
 
 dependencies {
-    implementation 'com.github.axet:android-library:1.33.0'
-    implementation 'com.github.axet:android-audio-library:1.0.180'
-    implementation 'com.github.axet:vorbis:1.0.5'
+
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation project(path: ':libvorbis-libogg-android-master')
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
