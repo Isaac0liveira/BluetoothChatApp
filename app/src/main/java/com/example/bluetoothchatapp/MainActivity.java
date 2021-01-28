@@ -19,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int MESSAGE_WRITE = 2;
     public static final int MESSAGE_DEVICE_NAME = 3;
     public static final int MESSAGE_TOAST = 4;
+    public boolean recording;
 
     private Handler handler = new Handler(new Handler.Callback() {
         @Override
@@ -263,13 +265,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
+    @SuppressLint("SetTextI18n")
     private void startRecording() {
-        vorbisRecorder.start(8000, 1, 16000);
+        if (vorbisRecorder == null || vorbisRecorder.isStopped()) {
+            //Get location to save to
+            File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
+            //Create our recorder if necessary
+            if (vorbisRecorder == null) {
+                vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
+            }
+
+            vorbisRecorder.start(8000, 2, 32000);
+            recordButton.setText("Stop");
+        }
     }
 
     private void stopRecording() {
+        if(!vorbisRecorder.isRecording()){
+            startRecording();
+            return;
+        }
         vorbisRecorder.stop();
+        recordButton.setText("Start");
     }
 
 
@@ -280,12 +297,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private void init() {
-        File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
-        vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
 
+    private void init() {
         listMainChat = findViewById(R.id.list_conversation);
+        recording = false;
         edCreateMessage = findViewById(R.id.ed_enter_message);
         btnSendMessage = findViewById(R.id.btn_send_message);
         playButton = findViewById(R.id.btn_play);
@@ -294,17 +309,23 @@ public class MainActivity extends AppCompatActivity {
         recordButton = new Button(context);
         recordButton.setText("Start");
         recordButton.setOnClickListener(v -> {
-                if (vorbisRecorder.isRecording()) {
-                    stopRecording();
-                    recordButton.setText("Start");
-                } else {
-                    startRecording();
-                    recordButton.setText("Stop");
-                }
+                    if(!recording){
+                        startRecording();
+                        recording = true;
+                        return;
+                    }else{
+                        stopRecording();
+                        recording = false;
+                        return;
+                    }
         });
         playButton.setOnClickListener(v -> {
             if (vorbisPlayer == null) {
                 try {
+                    File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
+                    if(!fileToSaveTo.exists()){
+                        return;
+                    }
                     vorbisPlayer = new VorbisPlayer(fileToSaveTo, playerHandler);
                     vorbisPlayer.start();
                     vorbisPlayer.stop();
