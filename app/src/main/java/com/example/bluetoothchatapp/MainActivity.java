@@ -35,6 +35,8 @@ import android.widget.Toast;
 
 import org.xiph.vorbis.player.VorbisPlayer;
 import org.xiph.vorbis.recorder.VorbisRecorder;
+import org.xiph.vorbis.stream.VorbisFileInputStream;
+import org.xiph.vorbis.stream.VorbisFileOutputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -43,6 +45,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
     private Button playButton = null;
     private VorbisRecorder vorbisRecorder;
     private VorbisPlayer vorbisPlayer;
-
+    private TimeUnit timer;
 
     private MediaPlayer player = null;
     private static String fileName = null;
@@ -238,15 +242,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public byte[] convert(String path) throws IOException {
-
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[2048];
-
+        byte[] bytearray = new byte[4096];
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
         }
-
         byte[] bytes = bos.toByteArray();
 
         return bytes;
@@ -257,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
             File outputFile = File.createTempFile("file", suffix, getCacheDir());
             outputFile.deleteOnExit();
             FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
-            fileoutputstream.write(bytearray);
+            fileoutputstream.write(bytearray, 0, bytearray.length);
             fileoutputstream.close();
 
         } catch (IOException ex) {
@@ -275,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                 vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
             }
 
-            vorbisRecorder.start(8000, 2, 32000);
+            vorbisRecorder.start(44100, 1, 0.5f);
             recordButton.setText("Stop");
         }
     }
@@ -283,7 +284,17 @@ public class MainActivity extends AppCompatActivity {
     private void stopRecording() throws IOException {
         vorbisRecorder.stop();
         recordButton.setText("Start");
-        chatUtils.write(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), -1);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    convertBytesToFile(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), "ogg");
+                    chatUtils.write(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), -1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, 1800);
     }
 
 

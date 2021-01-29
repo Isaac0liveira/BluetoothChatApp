@@ -59,6 +59,19 @@ public class DeviceListActivity extends AppCompatActivity {
         listPairedDevices.setAdapter(adapterPairedDevices);
         listAvailableDevices.setAdapter(adapterAvailableDevices);
 
+
+        listPairedDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String info = ((TextView)view).getText().toString();
+                String address = info.substring(info.length() - 17);
+
+                Intent intent = new Intent();
+                intent.putExtra("deviceAddress", address);
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        });
         listAvailableDevices.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {

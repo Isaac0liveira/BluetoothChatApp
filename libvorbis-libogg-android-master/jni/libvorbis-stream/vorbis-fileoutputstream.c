@@ -73,7 +73,6 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_create(
             const jbyte * pchars = (*env)->GetStringUTFChars(env, path, NULL);
             if (pchars == NULL) {
                 /* Exception Already thrown */
-                return;
             }
             /* We found one! */
             optr = &output_streams[stream_idx];
@@ -81,7 +80,6 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_create(
             if (optr->fh == NULL) {
                 char * message = "Error Creating File Handle. ";
                 JNU_ThrowByName(env, "java/io/IOException", message, errno);
-                return;
             }
             (*env)->ReleaseStringUTFChars(env, path, pchars);
             break;
@@ -90,7 +88,6 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_create(
     if (stream_idx == MAX_OUTPUTSTREAMS) {
         JNU_ThrowByName(env, "java/io/IOException",
                 "Too Many Vorbis OutputStreams", stream_idx);
-        return;
     }
 
     /* Step 1. According to documented workflow.
@@ -115,7 +112,6 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_create(
     if (ret) {
         JNU_ThrowByName(env, "java/io/IOException", "Bad Encoding options", ret);
         fclose(optr->fh);
-        return;
     }
 
     /* Step 2. */
@@ -141,7 +137,6 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_create(
         vorbis_info_clear(&optr->vi);
         fclose(optr->fh);
         optr->fh = NULL;
-        return;
     }
 
     ogg_stream_packetin(&optr->os, &header); /* placed in its own page */
@@ -186,12 +181,10 @@ jint Java_org_xiph_vorbis_stream_VorbisFileOutputStream_writeStreamIdx(
         JNU_ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
                 "No data was read from the buffer",
                 offset + length - 1);
-        return;
     }
     if (sidx >= MAX_OUTPUTSTREAMS || sidx < 0 || optr->fh == NULL) {
         JNU_ThrowByName(env, "java/io/IOException", "Invalid Stream Index",
                 sidx);
-        return;
     }
 
     channels = optr->channels;
@@ -293,3 +286,8 @@ void Java_org_xiph_vorbis_stream_VorbisFileOutputStream_closeStreamIdx(
     optr->fh = NULL;
 }
 
+JNIEXPORT jint JNICALL
+Java_org_xiph_vorbis_stream_VorbisFileInputStream_create(JNIEnv *env, jobject thiz, jstring fname,
+                                                         jobject info) {
+    // TODO: implement create()
+}

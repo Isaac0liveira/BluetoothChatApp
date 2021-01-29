@@ -7,9 +7,14 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
+import android.os.SystemClock;
 import android.util.Log;
 
+import androidx.core.app.ActivityCompat;
+
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -254,14 +259,14 @@ public class ChatUtils {
         @Override
         public void run() {
             byte[] buffer;
-            int bytes;
             while (true) {
                 try {
                     if(inputStream.available() != 0) {
-                        bytes = inputStream.read(buffer = new byte[inputStream.available()]);
-                        handler.obtainMessage(MainActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                       Thread.sleep(4000);
+                       inputStream.read(buffer = new byte[inputStream.available()]);
+                       handler.obtainMessage(MainActivity.MESSAGE_READ, -1, -1, buffer).sendToTarget();
                     }
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     Log.d("Erro: ", "Input stream was disconnected", e);
                     connectionLost();
                     break;

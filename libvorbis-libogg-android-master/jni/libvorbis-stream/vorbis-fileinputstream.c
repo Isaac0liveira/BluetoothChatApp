@@ -23,12 +23,12 @@ struct input_stream {
 };
 static struct input_stream input_streams[MAX_INPUTSTREAMS];
 
-jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_create(
+jint Java_com_ideaheap_io_VorbisFileInputStream_create(
 		JNIEnv* env,
 		jobject this,
 		jstring path,
 		jobject info
-		)
+)
 {
 	int ret;	/* Debugging variable */
 	jfieldID channels_field, sample_rate_field, length_field;	/* JNI field ID */
@@ -43,14 +43,14 @@ jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_create(
 			const jbyte * pchars = (*env)->GetStringUTFChars(env, path, NULL);
 			if (pchars == NULL) {
 				/* Exception Already thrown */
-				return;
+				return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;;
 			}
 			/* We found one! */
 			iptr = &input_streams[stream_idx];
 			iptr->fh = fopen(pchars, "r");
 			if (iptr->fh == NULL) {
 				JNU_ThrowByName(env, "java/io/IOException", "Error Creating File Handle", 0);
-				return;
+				return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;;
 			}
 			(*env)->ReleaseStringUTFChars(env, path, pchars);
 			break;
@@ -59,18 +59,18 @@ jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_create(
 
 	if (stream_idx == MAX_INPUTSTREAMS) {
 		JNU_ThrowByName(env, "java/io/IOException",
-				"Too Many Vorbis InputStreams", stream_idx);
-		return;
+						"Too Many Vorbis InputStreams", stream_idx);
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;;
 	}
 
 	/* Open the stream */
 	ret = ov_open(iptr->fh, &iptr->vf, NULL, 0);
 	if (ret < 0) {
 		JNU_ThrowByName(env, "java/io/IOException",
-				"Vorbis File Corrupt", ret);
+						"Vorbis File Corrupt", ret);
 		fclose(iptr->fh);
 		iptr->fh = NULL;
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;;
 	}
 
 	channels_field = (*env)->GetFieldID(env, cls, "channels", "I");
@@ -78,11 +78,11 @@ jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_create(
 	length_field = (*env)->GetFieldID(env, cls, "length", "J");
 	if (channels_field == NULL || sample_rate_field == NULL) {
 		JNU_ThrowByName(env, "java/lang/Exception",
-				"Native Field Misnamed", 0);
+						"Native Field Misnamed", 0);
 		ov_clear(&iptr->vf);
 		fclose(iptr->fh);
 		iptr->fh = NULL;
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;;
 	}
 
 	vi = ov_info(&iptr->vf, -1);
@@ -119,12 +119,12 @@ jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_readStreamIdx(
 		JNU_ThrowByName(env, "java/lang/ArrayIndexOutOfBoundsException",
 				"No data was written to the buffer",
 				offset + length - 1);
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 	}
 
 	if (sidx >= MAX_INPUTSTREAMS || sidx < 0 || iptr->fh == NULL) {
 		JNU_ThrowByName(env, "java/io/IOException", "Invalid Stream Index", sidx);
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 	}
 
 	if (length > 0) {
@@ -136,7 +136,7 @@ jint Java_org_xiph_vorbis_stream_VorbisFileInputStream_readStreamIdx(
 		else if (ret < 0) {
 			if (ret == OV_EBADLINK) {
 				JNU_ThrowByName(env, "java/io/IOException", "Corrupt bitstream section!", iptr->section);
-				return;
+				return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 			}
 		}
 	}
@@ -160,18 +160,18 @@ jlong Java_org_xiph_vorbis_stream_VorbisFileInputStream_skipStreamIdx(
 	long ret;
 	if (sidx >= MAX_INPUTSTREAMS || sidx < 0 || iptr->fh == NULL) {
 		JNU_ThrowByName(env, "java/io/IOException", "Invalid Stream Index", sidx);
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 	}
 
 	ret = ov_pcm_seek_lap(&iptr->vf, offset);
 
 	if (ret == OV_EREAD) {
 		JNU_ThrowByName(env, "java/io/IOException", "Read ERROR", ret);
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 	}
 	else if (ret != 0){
 		JNU_ThrowByName(env, "java/io/IOException", "Vorbis Seek Error code: ", ret);
-		return;
+		return fprintf (stderr , "Indicating that the first date is equal to second date.\n"); ;
 	}
 
 	return ret;
