@@ -14,7 +14,12 @@ import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -68,7 +73,7 @@ public class ChatUtils {
             acceptThread.start();
         }
 
-        if(connectedThread != null){
+        if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
         }
@@ -87,7 +92,7 @@ public class ChatUtils {
             acceptThread = null;
         }
 
-        if(connectedThread != null){
+        if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
         }
@@ -108,7 +113,7 @@ public class ChatUtils {
         connectThread = new ConnectThread(device);
         connectThread.start();
 
-        if(connectedThread != null){
+        if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
         }
@@ -116,10 +121,10 @@ public class ChatUtils {
         setState(STATE_CONNECTING);
     }
 
-    public void write(byte[] buffer, int code){
+    public void write(byte[] buffer, int code) {
         ConnectedThread conThread;
-        synchronized (this){
-            if(state != STATE_CONNECTED){
+        synchronized (this) {
+            if (state != STATE_CONNECTED) {
                 return;
             }
 
@@ -246,9 +251,9 @@ public class ChatUtils {
 
             }
 
-            try{
+            try {
                 tmpOut = socket.getOutputStream();
-            }catch (IOException e){
+            } catch (IOException e) {
 
             }
 
@@ -257,16 +262,14 @@ public class ChatUtils {
         }
 
         @Override
-        public void run() {
-            byte[] buffer;
+        public synchronized void run() {
             while (true) {
                 try {
-                    if(inputStream.available() != 0) {
-                       Thread.sleep(4000);
-                       inputStream.read(buffer = new byte[inputStream.available()]);
-                       handler.obtainMessage(MainActivity.MESSAGE_READ, -1, -1, buffer).sendToTarget();
+                    if (inputStream.available() != 0) {
+                        byte[] buffer = new byte[1024];
+                        handler.obtainMessage(MainActivity.MESSAGE_READ, -1, -1, reading(buffer)).sendToTarget();
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
                     Log.d("Erro: ", "Input stream was disconnected", e);
                     connectionLost();
                     break;
@@ -274,19 +277,29 @@ public class ChatUtils {
             }
         }
 
+        public synchronized byte[] reading(byte[] buffer) throws IOException {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            for(int read; (read = inputStream.read(buffer)) > 1023;){
+                out.write(buffer, 0, read);
+            }
+            return out.toByteArray();
+        }
+
+
         public void write(byte[] buffer, int code) {
-            try{
+            try {
                 outputStream.write(buffer);
+                outputStream.flush();
                 handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, code, buffer).sendToTarget();
-            }catch(IOException e){
+            } catch (IOException e) {
 
             }
         }
 
-        public void cancel(){
-            try{
+        public void cancel() {
+            try {
                 socket.close();
-            }catch (IOException e){
+            } catch (IOException e) {
 
             }
         }
@@ -318,7 +331,7 @@ public class ChatUtils {
             connectThread = null;
         }
 
-        if(connectedThread != null){
+        if (connectedThread != null) {
             connectedThread.cancel();
             connectedThread = null;
         }

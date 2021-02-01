@@ -108,11 +108,16 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case MESSAGE_READ:
                     byte[] buffer = (byte[]) msg.obj;
-                    String inputBuffer = new String(buffer, 0, msg.arg1);
-                    if (inputBuffer.length() > 100) {
+                    try {
+                        String inputBuffer = new String(buffer, 0, msg.arg1);
+                        if (inputBuffer.length() > 100) {
+                            convertBytesToFile(buffer, "ogg");
+                        } else {
+                            adapterMainChat.add(connectedDevice + ": " + inputBuffer);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                         convertBytesToFile(buffer, "ogg");
-                    } else {
-                        adapterMainChat.add(connectedDevice + ": " + inputBuffer);
                     }
                     break;
                 case MESSAGE_WRITE:
@@ -244,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     public byte[] convert(String path) throws IOException {
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[4096];
+        byte[] bytearray = new byte[1024];
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
         }
@@ -260,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
             fileoutputstream.write(bytearray, 0, bytearray.length);
             fileoutputstream.close();
-
+            Toast.makeText(context, "Audio está pronto para reprodução!", Toast.LENGTH_SHORT).show();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -276,7 +281,7 @@ public class MainActivity extends AppCompatActivity {
                 vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
             }
 
-            vorbisRecorder.start(44100, 1, 0.5f);
+            vorbisRecorder.start(8000, 1, 32000);
             recordButton.setText("Stop");
         }
     }
