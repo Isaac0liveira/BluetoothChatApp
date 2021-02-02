@@ -7,15 +7,12 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.os.SystemClock;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
+import org.awaitility.Awaitility;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -24,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 
 public class ChatUtils {
 
@@ -234,25 +233,27 @@ public class ChatUtils {
 
     }
 
+
     private class ConnectedThread extends Thread {
         private final BluetoothSocket socket;
-        private final InputStream inputStream;
-        private final OutputStream outputStream;
+        private final DataInputStream inputStream;
+        private final DataOutputStream outputStream;
+        public int inputSize;
 
         private ConnectedThread(BluetoothSocket socket) {
             this.socket = socket;
 
-            InputStream tmpIn = null;
-            OutputStream tmpOut = null;
+            DataInputStream tmpIn = null;
+            DataOutputStream tmpOut = null;
 
             try {
-                tmpIn = socket.getInputStream();
+                tmpIn = new DataInputStream(socket.getInputStream());
             } catch (IOException e) {
 
             }
 
             try {
-                tmpOut = socket.getOutputStream();
+                tmpOut = new DataOutputStream(socket.getOutputStream());
             } catch (IOException e) {
 
             }
@@ -261,13 +262,19 @@ public class ChatUtils {
             outputStream = tmpOut;
         }
 
+
         @Override
         public synchronized void run() {
             while (true) {
                 try {
+                    inputSize = Integer.parseInt(inputStream.readUTF());
+                    Log.d("availables2", String.valueOf(inputStream.available()));
                     if (inputStream.available() != 0) {
-                        byte[] buffer = new byte[1024];
-                        handler.obtainMessage(MainActivity.MESSAGE_READ, -1, -1, reading(buffer)).sendToTarget();
+                        byte[] buffer = new byte[inputSize];
+                        Log.d("availables", String.valueOf(inputStream.available()));
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        int bytes = inputStream.read(buffer);
+                        handler.obtainMessage(MainActivity.MESSAGE_READ, -1, bytes, buffer).sendToTarget();
                     }
                 } catch (IOException e) {
                     Log.d("Erro: ", "Input stream was disconnected", e);
@@ -277,20 +284,16 @@ public class ChatUtils {
             }
         }
 
-        public synchronized byte[] reading(byte[] buffer) throws IOException {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            for(int read; (read = inputStream.read(buffer)) > 1023;){
-                out.write(buffer, 0, read);
-            }
-            return out.toByteArray();
-        }
-
 
         public void write(byte[] buffer, int code) {
             try {
-                outputStream.write(buffer);
-                outputStream.flush();
-                handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, code, buffer).sendToTarget();
+                if (buffer == null) {
+                    outputStream.writeUTF(String.valueOf(code));
+                    handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, -1, String.valueOf(code).getBytes()).sendToTarget();
+                }else {
+                    outputStream.write(buffer);
+                    handler.obtainMessage(MainActivity.MESSAGE_WRITE, -1, -1, buffer).sendToTarget();
+                }
             } catch (IOException e) {
 
             }

@@ -33,6 +33,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import org.awaitility.Awaitility;
 import org.xiph.vorbis.player.VorbisPlayer;
 import org.xiph.vorbis.recorder.VorbisRecorder;
 import org.xiph.vorbis.stream.VorbisFileInputStream;
@@ -249,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
     public byte[] convert(String path) throws IOException {
         FileInputStream file = new FileInputStream(path);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        byte[] bytearray = new byte[1024];
+        byte[] bytearray = new byte[8192];
         for (int readNum; (readNum = file.read(bytearray)) != -1; ) {
             bos.write(bytearray, 0, readNum);
         }
@@ -286,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void stopRecording() throws IOException {
+    private void stopRecording() throws IOException, InterruptedException {
         vorbisRecorder.stop();
         recordButton.setText("Start");
         new Handler().postDelayed(new Runnable() {
@@ -294,12 +295,14 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     convertBytesToFile(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), "ogg");
+                    chatUtils.write(null, convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg").length);
                     chatUtils.write(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), -1);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }, 1800);
+        }, 2000);
+
     }
 
 
@@ -329,7 +332,7 @@ public class MainActivity extends AppCompatActivity {
                     }else{
                         try {
                             stopRecording();
-                        } catch (IOException e) {
+                        } catch (IOException | InterruptedException e) {
                             e.printStackTrace();
                         }
                         recording = false;
