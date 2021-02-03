@@ -5,8 +5,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -16,7 +18,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -45,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.chrono.ThaiBuddhistChronology;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private final int LOCATION_PERMISSION_REQUEST = 101;
     private final int SELECT_DEVICE = 102;
     private final int RECORD_AUDIO = 103;
+    private final int READ_STORAGE = 104;
 
     public static final String DEVICE_NAME = "deviceName";
     private String connectedDevice;
@@ -201,6 +207,15 @@ public class MainActivity extends AppCompatActivity {
         init();
         chatUtils = new ChatUtils(context, handler);
         chatUtils.start();
+        new Thread(() -> {
+            while (true) {
+                if (new File("/storage/emulated/0/bluetooth/saveTo.ogg").exists()) {
+                    playButton.setVisibility(View.VISIBLE);
+                } else if (new File("/storage/emulated/0/Download/saveTo.ogg").exists()) {
+                    playButton.setVisibility(View.VISIBLE);
+                }
+            }
+        }).start();
     }
 
     @Override
@@ -210,9 +225,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermission() {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
-        }
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST);
         } else {
@@ -263,7 +275,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             File outputFile = File.createTempFile("file", suffix, getCacheDir());
             outputFile.deleteOnExit();
-            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
+            FileOutputStream fileoutputstream = new FileOutputStream(getExternalCacheDir().getAbsolutePath() + "/audio." + suffix);
             fileoutputstream.write(bytearray, 0, bytearray.length);
             fileoutputstream.close();
             Toast.makeText(context, "Audio está pronto para reprodução!", Toast.LENGTH_SHORT).show();
@@ -272,35 +284,38 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     @SuppressLint("SetTextI18n")
     private void startRecording() {
-        if (vorbisRecorder == null || vorbisRecorder.isStopped()) {
-            //Get location to save to
-            File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
-            //Create our recorder if necessary
-            if (vorbisRecorder == null) {
-                vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
-            }
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.RECORD_AUDIO}, RECORD_AUDIO);
+            MainActivity.this.recreate();
+        }else {
+            if (vorbisRecorder == null || vorbisRecorder.isStopped()) {
+                //Get location to save to
+                File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
+                //Create our recorder if necessary
+                if (vorbisRecorder == null) {
+                    vorbisRecorder = new VorbisRecorder(fileToSaveTo, recordingHandler);
+                }
 
-            vorbisRecorder.start(8000, 1, 32000);
-            recordButton.setText("Stop");
+                vorbisRecorder.start(8000, 1, 32000);
+                recordButton.setText("Stop");
+            }
         }
     }
 
     private void stopRecording() throws IOException, InterruptedException {
         vorbisRecorder.stop();
         recordButton.setText("Start");
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    convertBytesToFile(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), "ogg");
-                    chatUtils.write(null, convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg").length);
-                    chatUtils.write(convert(getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg"), -1);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        new Handler().postDelayed(() -> {
+            String sharePath = getExternalCacheDir().getAbsolutePath() + "/saveTo.ogg";
+            Uri uri = FileProvider.getUriForFile(context, getApplicationContext().getPackageName() + ".provider", new File(sharePath));
+            Intent share = new Intent(Intent.ACTION_SEND);
+            share.setType("audio/*");
+            share.setClassName("com.android.bluetooth", "com.android.bluetooth.opp.BluetoothOppLauncherActivity");
+            share.putExtra(Intent.EXTRA_STREAM, uri);
+            startActivity(Intent.createChooser(share, "Compartilhar Audio"));
         }, 2000);
 
     }
@@ -322,52 +337,85 @@ public class MainActivity extends AppCompatActivity {
         playButton = findViewById(R.id.btn_play);
         adapterMainChat = new ArrayAdapter(context, android.R.layout.simple_list_item_1);
         listMainChat.setAdapter(adapterMainChat);
-        recordButton = new Button(context);
-        recordButton.setText("Start");
+        recordButton = findViewById(R.id.record);
         recordButton.setOnClickListener(v -> {
-                    if(!recording){
-                        startRecording();
-                        recording = true;
-                        return;
-                    }else{
-                        try {
-                            stopRecording();
-                        } catch (IOException | InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                        recording = false;
-                        return;
-                    }
-        });
-        playButton.setOnClickListener(v -> {
-            if (vorbisPlayer == null) {
-                try {
-                    File fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath(), "saveTo.ogg");
-                    if(!fileToSaveTo.exists()){
-                        return;
-                    }
-                    vorbisPlayer = new VorbisPlayer(fileToSaveTo, playerHandler);
-                    vorbisPlayer.start();
-                    vorbisPlayer.stop();
-                } catch (FileNotFoundException e) {
-                    Log.e("erroPlayer", "Failed to find saveTo.ogg", e);
-                    Toast.makeText(context, "Failed to find file to play!", Toast.LENGTH_SHORT).show();
-                }
-            } else if (vorbisPlayer.isPlaying()) {
-                vorbisPlayer.stop();
-                playButton.setText("Audio");
+            if (!recording) {
+                startRecording();
+                recording = true;
+                return;
             } else {
-                vorbisPlayer.start();
-                playButton.setText("Parar");
+                try {
+                    stopRecording();
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+                recording = false;
+                return;
             }
         });
-        RelativeLayout rl = findViewById(R.id.relative);
-        rl.addView(recordButton, new RelativeLayout.LayoutParams(150, 150));
+        playButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_STORAGE);
+                MainActivity.this.recreate();
+            }else {
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 105);
+                    MainActivity.this.recreate();
+                } else {
+                    if (vorbisPlayer == null) {
+                        try {
+                            File fileToSaveTo;
+                            String realPath = null;
+                            if (new File("/storage/emulated/0/bluetooth/saveTo.ogg").exists()) {
+                                realPath = "/storage/emulated/0/bluetooth/saveTo.ogg";
+                                convertBytesToFile(convert(realPath), "ogg");
+                                fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
+                                new File(realPath).delete();
+                            } else if (new File("/storage/emulated/0/Download/saveTo.ogg").exists()) {
+                                realPath = "/storage/emulated/0/Download/saveTo.ogg";
+                                convertBytesToFile(convert(String.valueOf(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)) + "/saveTo.ogg"), "ogg");
+                                fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
+                                new File(realPath).delete();
+                            } else if (new File(getExternalCacheDir().getAbsolutePath() + "/audio.ogg").exists()) {
+                                fileToSaveTo = new File(getExternalCacheDir().getAbsolutePath() + "/audio.ogg");
+                            } else {
+                                return;
+                            }
+                            MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+                            mediaMetadataRetriever.setDataSource(fileToSaveTo.getPath());
+                            String duration = mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+                            vorbisPlayer = new VorbisPlayer(fileToSaveTo, playerHandler);
+                            vorbisPlayer.start();
+                            vorbisPlayer.stop();
+                            playButton.setText("Parar");
+                            new Handler().postDelayed(() -> {
+                                playButton.setText("Audio");
+                            }, Long.parseLong(duration));
+                        } catch (FileNotFoundException e) {
+                            Log.e("erroPlayer", "Failed to find saveTo.ogg", e);
+                            Toast.makeText(context, "Failed to find file to play!", Toast.LENGTH_SHORT).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (vorbisPlayer.isPlaying()) {
+                        vorbisPlayer.stop();
+                        playButton.setText("Audio");
+                    } else {
+                        vorbisPlayer = null;
+                        playButton.performClick();
+                    }
+                }
+            }
+        });
         btnSendMessage.setOnClickListener(v -> {
             String message = edCreateMessage.getText().toString();
             if (!message.isEmpty()) {
                 edCreateMessage.setText("");
-                chatUtils.write(message.getBytes(), -1);
+                try {
+                    chatUtils.write(message.getBytes(), -1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
